@@ -1,0 +1,41 @@
+{"title": "Bella prova è d'alma forte",
+  "tempo": "85",
+  "notas": [
+    {"nota": "  ", "oitava": 4, "duracao": "seminima"},
+    {"nota": "  ", "oitava": 4, "duracao": "colcheia"},
+    {"nota": "Mi", "oitava": 4, "duracao": "seminima"},
+    {"nota": "Mi", "oitava": 4, "duracao": "colcheia"},
+
+    {"nota": "Do", "oitava": 5, "duracao": "seminima"},
+    {"nota": "Mi", "oitava": 4, "duracao": "colcheia"},
+    {"nota": "Mi", "oitava": 4, "duracao": "seminima"},
+    {"nota": "Mi", "oitava": 4, "duracao": "colcheia"},
+
+    {"nota": "Do", "oitava": 5, "duracao": "seminima"},
+    {"nota": "Mi", "oitava": 4, "duracao": "colcheia"},
+    {"nota": "Do", "oitava": 5, "duracao": "seminima"},
+    {"nota": "Do", "oitava": 5, "duracao": "colcheia"},
+
+    {"nota": "Si", "oitava": 4, "duracao": "seminima"},
+    {"nota": "Re", "oitava": 4, "duracao": "colcheia"},
+    {"nota": "Si", "oitava": 4, "duracao": "seminima"},
+    {"nota": "Re", "oitava": 4, "duracao": "colcheia"},
+
+
+    {"nota": "Do", "oitava": 4, "duracao": "seminima"},
+    {"nota": "Do", "oitava": 4, "duracao": "semicolcheia"},
+    {"nota": "  ", "oitava": 4, "duracao": "semicolcheia"},
+    {"nota": "Mi", "oitava": 4, "duracao": "seminima"},
+    {"nota": "Mi", "oitava": 4, "duracao": "colcheia"},
+
+    {"nota": "Do", "oitava": 5, "duracao": "seminima"},
+    {"nota": "Mi", "oitava": 4, "duracao": "colcheia"},
+    {"nota": "Mi", "oitava": 4, "duracao": "seminima"},
+    {"nota": "Mi", "oitava": 4, "duracao": "colcheia"},
+
+    {"nota": "Do", "oitava": 5, "duracao": "seminima"},
+    {"nota": "Mi", "oitava": 4, "duracao": "colcheia"},
+    {"nota": "Do", "oitava": 5, "duracao": "seminima"},
+    {"nota": "Mi", "oitava": 4, "duracao": "colcheia"}
+  ]
+}

@@ -2,9 +2,8 @@ import json
 from mido import Message, MidiFile, MidiTrack, MetaMessage
 
 
-def solfege_to_midi(note):
-    """Recebe uma nota musical acompanhada da oitava (ex. Mi#4) e retorna o
-    número MIDI."""
+def solfege_to_midi(note, octave):
+    """Recebe uma nota musical e a oitava e retorna o número MIDI."""
     res = None
     pitch_map = {
         "Do": 0, "Do#": 1, 
@@ -15,26 +14,16 @@ def solfege_to_midi(note):
         "La": 9, "La#": 10, 
         "Si": 11
     }
-    if note != "rest":
-        note_name = note[:-1]
-        octave = int(note[-1])
-        res = (octave + 1) * 12 + pitch_map[note_name]
+    if note != "  ":
+        res = (octave + 1) * 12 + pitch_map[note]
 
     return res
 
 
 
-# Mapeamento de duração
-duration_map = {
-    "semibreve": 4,
-    "minima": 2,
-    "seminima": 1,
-    "colcheia": 0.5,
-    "semicolcheia": 0.25
-}
 
 
-# Criando o arquivo MIDI
+
 mid = MidiFile()
 track = MidiTrack()
 mid.tracks.append(track)
@@ -45,8 +34,17 @@ mid.tracks.append(track)
 
 
 musica = "bella_prova"
-with open(f"{musica}.json", "r", encoding="utf-8") as f:
+with open(f"partituras/{musica}.json", "r", encoding="utf-8") as f:
     melody = json.load(f)
+
+
+duration_map = {
+    "semibreve": 4,
+    "minima": 2,
+    "seminima": 1,
+    "colcheia": 0.5,
+    "semicolcheia": 0.25
+}
 
 
 # Configurar tempo
@@ -56,9 +54,9 @@ tempo = int(60_000_000 / bpm)  # Converte BPM para tempo em microssegundos
 track.append(MetaMessage("set_tempo", tempo=tempo))
 
 # Adicionando notas e pausas
-for note in melody["notes"]:
-    midi_number = solfege_to_midi(note["pitch"])
-    duration_ticks = int(duration_map[note["duration"]] * ticks_per_beat)
+for note in melody["notas"]:
+    midi_number = solfege_to_midi(note["nota"], note["oitava"])
+    duration_ticks = int(duration_map[note["duracao"]] * ticks_per_beat)
 
     if midi_number is None:
         # Se for uma pausa, apenas adiciona tempo sem um evento de nota
