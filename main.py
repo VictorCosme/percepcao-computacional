@@ -158,9 +158,18 @@ def get_nota(audio_slice):
 
 
 def avaliar_canto(notas_cantadas, notas_esperadas):
-    score = 0
-    #todo
-    return score 
+    if len(notas_cantadas) != len(notas_esperadas):
+        print("esperava-se notas_cantadas == notas_esperadas...")
+
+    acertos = 0
+    
+    for cantada, esperada in zip(notas_cantadas, notas_esperadas):
+        if cantada == esperada:
+            acertos += 1
+
+    score = acertos / len(notas_esperadas)
+
+    return score
 
 
 
