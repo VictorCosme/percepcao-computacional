@@ -1,0 +1,11 @@
+{
+  "title": "Exemplo simples",
+  "tempo": "120",
+  "notes": [
+    {"pitch": "Do4", "duration": "seminima"},
+    {"pitch": "Re4", "duration": "seminima"},
+    {"pitch": "rest", "duration": "seminima"},
+    {"pitch": "Mi4", "duration": "seminima"},
+    {"pitch": "Fa4", "duration": "seminima"}
+  ]
+}
