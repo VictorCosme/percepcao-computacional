@@ -19,7 +19,9 @@ def main(partitura, delay, naipe):
     #    canto = tratar_audio(canto, naipe)
 
     notas_cantadas = get_notas_cantadas(canto, num_divisoes)
+    
 
+    print(f"notas esperadas = {notas_esperadas}")
     return avaliar_canto(notas_cantadas, notas_esperadas)
 
 
@@ -124,7 +126,10 @@ def executar(melodia, delay):
     pass
 
 
-def capturar_audio(duracao):
+def capturar_audio(duracao=None):
+    musica = "/home/victor/percepcao-computacional/teste_simples.wav"
+    reproduzir_audio(musica)  
+    return musica
     fs = 44100  # Frequência de amostragem (CD quality)
     print(f"Gravando por {duracao} segundos...")
 
@@ -152,6 +157,8 @@ def get_notas_cantadas(audio, num_divisoes):
         get_nota(audio_slice)
         for audio_slice in slice(audio, num_divisoes)
     ]
+
+    print(f"Notas cantadas = {notas_cantadas}")
     return notas_cantadas
 
 
@@ -195,6 +202,15 @@ def get_nota(audio_slice):
     Identifica a nota musical em um segmento de áudio.
     """
     audio_data, sr = audio_slice
+    
+    #-----------------
+    if audio_data.dtype != np.float32:
+        audio_data = audio_data.astype(np.float32)
+        max_val = np.max(np.abs(audio_data))
+        if max_val > 0:
+            audio_data /= max_val
+    #-----------------
+    
     f0, voiced_flag, voiced_probs = librosa.pyin(
         audio_data,
         fmin=librosa.note_to_hz('C2'),
@@ -244,34 +260,35 @@ def avaliar_canto(notas_cantadas, notas_esperadas):
         if cantada == esperada:
             acertos += 1
 
-    score = acertos / len(notas_esperadas)
+    score = 100 * acertos / len(notas_esperadas)
 
-    return score
-
-
-if __name__ == '__main__':
-    partitura = {"title": "Bella prova è d'alma forte",
-                 "tempo": "85",
-                 "notas": [
-                     {"nota": "DO", "oitava": 4, "duracao": "seminima"},
-                     {"nota": "DO", "oitava": 4, "duracao": "semicolcheia"},
-                     {"nota": "  ", "oitava": 4, "duracao": "semicolcheia"},
-                     {"nota": "MI", "oitava": 4, "duracao": "seminima"},
-                     {"nota": "MI", "oitava": 4, "duracao": "colcheia"},
-                 ]}
-
-    delay = None
-    naipe = None
-
-    res = capturar_audio(10)
+    return f"score = {score}/100"
 
 
-    def reproduzir_audio(caminho_arquivo):
+def reproduzir_audio(caminho_arquivo):
         fs, data = wavfile.read(caminho_arquivo)
         print("Reproduzindo...")
         sd.play(data, samplerate=fs)
         sd.wait()  # Espera terminar a reprodução
         print("Reprodução finalizada.")
 
+if __name__ == '__main__':
+    partitura = {
+    "title": "Bella prova è d'alma forte",
+    "tempo": "120",
+    "notas": [
+    {"nota": "DO", "oitava": 4, "duracao": "seminima"},
+    {"nota": "RE", "oitava": 4, "duracao": "seminima"},
+    {"nota": "  ", "oitava": 4, "duracao": "seminima"},
+    {"nota": "MI", "oitava": 4, "duracao": "seminima"},
+    {"nota": "FA", "oitava": 4, "duracao": "seminima"}
+  ]
+}
 
-    reproduzir_audio(res)
+    naipe = None
+
+    res = main(partitura, None, None)
+
+
+
+    print(res)
