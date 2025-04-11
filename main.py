@@ -1,8 +1,11 @@
 import mido
+import librosa
+import librosa.display
+import numpy as np
 from mido import Message, MidiFile, MidiTrack
 import tempfile
 import sounddevice as sd
-from scipy.io.wavfile import write 
+from scipy.io.wavfile import write
 from scipy.io import wavfile
 import tempfile
 
@@ -13,10 +16,10 @@ def main(partitura, delay, naipe):
     num_divisoes = len(notas_esperadas)
 
     canto = executar_e_gravar(melodia, delay)
-#    canto = tratar_audio(canto, naipe)
+    #    canto = tratar_audio(canto, naipe)
 
     notas_cantadas = get_notas_cantadas(canto, num_divisoes)
-    
+
     return avaliar_canto(notas_cantadas, notas_esperadas)
 
 
@@ -112,10 +115,10 @@ def get_notas_esperadas(partitura):
 def executar_e_gravar(melodia, delay):
     """executa paralelamente os métodos executar_melodia() e
     capturar_audio()"""
-    #executar(melodia, delay)
+    # executar(melodia, delay)
     canto = capturar_audio()
     return canto
-    
+
 
 def executar(melodia, delay):
     pass
@@ -142,19 +145,93 @@ def tratar_audio(audio, naipe):
 
 
 def get_notas_cantadas(audio, num_divisoes):
+    """
+    Analisa um arquivo de áudio e extrai as notas cantadas.
+    """
     notas_cantadas = [
-        get_nota(audio_slice) 
+        get_nota(audio_slice)
         for audio_slice in slice(audio, num_divisoes)
     ]
     return notas_cantadas
 
 
 def slice(audio, num_divisoes):
-    pass
+    """
+    Divide um arquivo de áudio em um número especificado de segmentos de igual duração.
+    """
+    sr, data = wavfile.read(audio)
+
+    if len(data.shape) > 1:
+        data = data[:, 0]
+
+    segment_size = len(data) // num_divisoes
+
+    segments = []
+    for i in range(num_divisoes):
+        start = i * segment_size
+        end = start + segment_size
+
+        if i == num_divisoes - 1:
+            segment = data[start:]
+        else:
+            segment = data[start:end]
+
+        segments.append((segment, sr))
+
+    return segments
+
+
+def freq_to_note(freq):
+    notas = ['do', 'do#', 're', 're#', 'mi', 'fa', 'fa#', 'sol', 'sol#', 'la', 'la#', 'si']
+    semitons = round(12 * np.log2(freq / 440.0))
+    nota = notas[(semitons + 9) % 12]
+    oitava = 4 + ((semitons + 9) // 12)
+
+    return f"{nota}{oitava}".upper()
 
 
 def get_nota(audio_slice):
-    pass
+    """
+    Identifica a nota musical em um segmento de áudio.
+    """
+    audio_data, sr = audio_slice
+    f0, voiced_flag, voiced_probs = librosa.pyin(
+        audio_data,
+        fmin=librosa.note_to_hz('C2'),
+        fmax=librosa.note_to_hz('C7'),
+        sr=sr
+    )
+
+    f0_valid = f0[voiced_flag]
+    if len(f0_valid) == 0:
+        # Nenhuma frequência vozeada detectada (silêncio ou ruído)
+        return {
+            "nota": "",
+            "oitava": 0,
+            "duracao": "seminima"  # Duração padrão
+        }
+
+    mediana = np.median(f0_valid) if len(f0_valid) > 0 else None
+    if mediana <= 0:
+        return {
+            "nota": "",
+            "oitava": 0,
+            "duracao": "seminima"
+        }
+
+    notas = ['DO', 'DO#', 'RE', 'RE#', 'MI', 'FA', 'FA#', 'SOL', 'SOL#', 'LA', 'LA#', 'SI']
+    semitons = round(12 * np.log2(mediana / 440.0))
+    nota = notas[(semitons + 9) % 12].upper()
+    oitava = 4 + ((semitons + 9) // 12)
+
+    duracao = "seminima"
+    # como analisar e definir a duração do slice?
+
+    return {
+        "nota": nota,
+        "oitava": oitava,
+        "duracao": duracao
+    }
 
 
 def avaliar_canto(notas_cantadas, notas_esperadas):
@@ -162,7 +239,7 @@ def avaliar_canto(notas_cantadas, notas_esperadas):
         print("esperava-se notas_cantadas == notas_esperadas...")
 
     acertos = 0
-    
+
     for cantada, esperada in zip(notas_cantadas, notas_esperadas):
         if cantada == esperada:
             acertos += 1
@@ -172,30 +249,29 @@ def avaliar_canto(notas_cantadas, notas_esperadas):
     return score
 
 
-
-
 if __name__ == '__main__':
     partitura = {"title": "Bella prova è d'alma forte",
-  "tempo": "85",
-  "notas": [
-    {"nota": "DO", "oitava": 4, "duracao": "seminima"},
-    {"nota": "DO", "oitava": 4, "duracao": "semicolcheia"},
-    {"nota": "  ", "oitava": 4, "duracao": "semicolcheia"},
-    {"nota": "MI", "oitava": 4, "duracao": "seminima"},
-    {"nota": "MI", "oitava": 4, "duracao": "colcheia"},
-  ]}
-
+                 "tempo": "85",
+                 "notas": [
+                     {"nota": "DO", "oitava": 4, "duracao": "seminima"},
+                     {"nota": "DO", "oitava": 4, "duracao": "semicolcheia"},
+                     {"nota": "  ", "oitava": 4, "duracao": "semicolcheia"},
+                     {"nota": "MI", "oitava": 4, "duracao": "seminima"},
+                     {"nota": "MI", "oitava": 4, "duracao": "colcheia"},
+                 ]}
 
     delay = None
     naipe = None
 
     res = capturar_audio(10)
-    
+
+
     def reproduzir_audio(caminho_arquivo):
         fs, data = wavfile.read(caminho_arquivo)
         print("Reproduzindo...")
         sd.play(data, samplerate=fs)
         sd.wait()  # Espera terminar a reprodução
         print("Reprodução finalizada.")
-    
+
+
     reproduzir_audio(res)
