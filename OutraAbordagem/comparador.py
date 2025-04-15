@@ -7,9 +7,9 @@ Avaliar se a duração e afinação estão em uma margem aceitável
 from processador_partitura import *
 
 
-def comparar_nota_cantada(prevista, detectada, tolerancia=1):
-    if detectada is None:
-        return False
+def comparar_nota_cantada(prevista: dict[str, str | float],
+                          detectada: dict[str, str | float],
+                          tolerancia: int = 1) -> bool:
 
     if (detectada["nota"] == "rest") != (prevista["nota"] == "rest"):
         return False
@@ -23,9 +23,9 @@ def comparar_nota_cantada(prevista, detectada, tolerancia=1):
     return abs(midi_prevista - midi_detectada) <= tolerancia  # tolerância padrão de ±1 semitom
 
 
-def comparar_duracao(prevista, detectada, tolerancia=0.25):
-    if detectada is None:
-        return False
+def comparar_duracao(prevista: dict[str, str | float],
+                     detectada: dict[str, str | float],
+                     tolerancia: float = 0.15) -> bool:
 
     if detectada["duracao"] == prevista["duracao"]:
         return True
@@ -33,12 +33,17 @@ def comparar_duracao(prevista, detectada, tolerancia=0.25):
     return abs(prevista["duracao"] - detectada["duracao"]) / prevista["duracao"] <= tolerancia
 
 
-def avaliar_execucao(previstas, detectadas):
-    avaliacao = []
+def avaliar_execucao(previstas: list[dict[str, str | float]] | None,
+                     detectadas: list[dict[str, str | float]] | None,
+                     tolerancia_afinacao: int = 1,
+                     tolerancia_duracao: float = 0.25) -> list[dict[str, str | bool]]:
+    if previstas is None or detectadas is None:
+        return []
 
+    avaliacao = []
     for prevista, detectada in zip(previstas, detectadas):
-        afinacao_certa = comparar_nota_cantada(prevista, detectada)
-        duracao_certa = comparar_duracao(prevista, detectada)
+        afinacao_certa = comparar_nota_cantada(prevista, detectada, tolerancia_afinacao)
+        duracao_certa = comparar_duracao(prevista, detectada, tolerancia_duracao)
 
         avaliacao.append({
             "nota_esperada": prevista["nota"],

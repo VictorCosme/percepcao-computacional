@@ -1,11 +1,10 @@
 """
 Módulo responsável por:
-Converter o arquivo json em mid
-Extrair as notas e durações do mid
+Processar a partitura JSON
+Extrair as notas presentes na partitura, descartante pausas iniciais e finais
 """
 
 import json
-from mido import Message, MidiFile, MidiTrack, MetaMessage
 
 
 def solfejo_para_midi(nota: str) -> int | None:
@@ -31,32 +30,12 @@ def solfejo_para_midi(nota: str) -> int | None:
     return (oitava + 1) * 12 + mapa_pitch[nome_nota]
 
 
-def midi_para_solfejo(numero_midi: int) -> str:
+def extrair_notas_json(melodia: dict) -> tuple[list[dict], float]:
     """
-    Recebe o número MIDI e retorna uma nota musical acompanhada da oitava (ex. Mi#4).
+    Recebe um arquivo JSON e retorna uma lista com os eventos (notas e silêncios) presentes.
     """
-    notas = ['Do', 'Do#', 'Re', 'Re#', 'Mi', 'Fa', 'Fa#', 'Sol', 'Sol#', 'La', 'La#', 'Si']
-    oitava = (numero_midi // 12) - 1
-    nota = notas[numero_midi % 12]
-
-    return f"{nota}{oitava}"
-
-
-def json_para_midi(nome_arquivo_json):
-    """
-    Recebe o nome de um arquivo json e o converte para um arquivo MIDI.
-    """
-    mid = MidiFile()
-    track = MidiTrack()
-    mid.tracks.append(track)
-
-    with open(f"{nome_arquivo_json}.json", "r", encoding="utf-8") as f:
-        melodia = json.load(f)
-
     bpm = int(melodia["tempo"])
-    ticks_por_beat = mid.ticks_per_beat
-    tempo = int(60_000_000 / bpm)
-    track.append(MetaMessage("set_tempo", tempo=tempo))
+    tempo_seg = 60 / bpm
 
     mapa_duracoes = {
         "semibreve": 4,
@@ -66,76 +45,48 @@ def json_para_midi(nome_arquivo_json):
         "semicolcheia": 0.25
     }
 
-    delay = 0
-    for nota in melodia["notes"]:
-        midi_number = solfejo_para_midi(nota["pitch"])
-        duration_ticks = int(mapa_duracoes[nota["duration"]] * ticks_por_beat)
-
-        if midi_number is None:
-            track.append(Message("note_off", note=0, velocity=0, time=duration_ticks))
-        else:
-            track.append(Message("note_on", note=midi_number, velocity=64, time=0))
-            track.append(Message("note_off", note=midi_number, velocity=64, time=duration_ticks))
-
-    midi_filename = f"{nome_arquivo_json}.mid"
-    mid.save(midi_filename)
-
-
-def extrair_notas(nome_arquivo_midi):
-    """
-    Recebe um arquivo MIDI e retorna uma lista com os eventos (notas e silêncios) presentes.
-    """
-    if not nome_arquivo_midi.endswith(".mid"):
-        nome_arquivo_midi += ".mid"
-
-    mid = MidiFile(nome_arquivo_midi)
-    ticks_por_beat = mid.ticks_per_beat
-    tempo = 500_000
-
     eventos = []
-    notas_ativas = {}
     tempo_atual = 0
-    ultimo_fim = 0
+    precisao = 3
 
-    for msg in mid:
-        tempo_atual += msg.time
+    for nota in melodia["notes"]:
+        pitch = nota["pitch"]
+        duracao = nota["duration"]
+        duracao_seg = mapa_duracoes[duracao] * tempo_seg
 
-        if msg.type == "set_tempo":
-            tempo = msg.tempo
+        eventos.append({
+            "nota": pitch,
+            "inicio": round(tempo_atual, precisao),
+            "duracao": round(duracao_seg, precisao)
+        })
 
-        if msg.type == "note_on" and msg.velocity > 0:
-            notas_ativas[msg.note] = tempo_atual
+        tempo_atual += duracao_seg
 
-        elif (msg.type == "note_off" or (msg.type == "note_on" and msg.velocity == 0)) and msg.note in notas_ativas:
-            inicio = notas_ativas.pop(msg.note)
-            duracao = tempo_atual - inicio
+    while eventos and eventos[0]["nota"] == "rest":
+        eventos.pop(0)
 
-            segundos_por_tick = tempo / (ticks_por_beat * 1_000)
-            inicio_seg = inicio * segundos_por_tick
-            duracao_seg = duracao * segundos_por_tick
+    while eventos and eventos[-1]["nota"] == "rest":
+        eventos.pop()
 
-            # detecção de pausas
-            if inicio_seg > ultimo_fim:
-                eventos.append({
-                    "nota": "rest",
-                    "inicio": ultimo_fim,
-                    "duracao": round(inicio_seg - ultimo_fim, 3)
-                })
+    duracao_minima = 0
+    if eventos:
+        deslocamento = eventos[0]["inicio"]
+        for evento in eventos:
+            evento["inicio"] = round(evento["inicio"] - deslocamento, precisao)
 
-            eventos.append({
-                "nota": midi_para_solfejo(msg.note),
-                "inicio": inicio_seg,
-                "duracao": round(duracao_seg, 3)
-            })
+        duracao_minima = eventos[-1]["inicio"] + eventos[-1]["duracao"]
 
-            ultimo_fim = inicio_seg + duracao_seg
-
-    return eventos
+    return eventos, round(duracao_minima, precisao)
 
 
-def processar_partitura(nome_arquivo_json):
+def processar_partitura(arquivo_json: str) -> tuple[list[dict], float]:
     """
-    Recebe o nome do arquivo json da partitura e processa o arquivo
+    Recebe o nome do arquivo JSON da partitura e processa o arquivo
     """
-    json_para_midi(nome_arquivo_json)
-    return extrair_notas(f"{nome_arquivo_json}.mid")
+    if not arquivo_json.endswith(".json"):
+        arquivo_json += ".json"
+
+    with open(arquivo_json, "r", encoding="utf-8") as f:
+        melodia = json.load(f)
+
+    return extrair_notas_json(melodia)
