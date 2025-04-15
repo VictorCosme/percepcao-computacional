@@ -4,6 +4,7 @@ Processar a partitura JSON
 Extrair as notas presentes na partitura, descartante pausas iniciais e finais
 """
 
+import os
 import json
 
 
@@ -83,10 +84,19 @@ def processar_partitura(arquivo_json: str) -> tuple[list[dict], float]:
     """
     Recebe o nome do arquivo JSON da partitura e processa o arquivo
     """
+    
+    print(f"Processando a partitura para a melodia {arquivo_json}...")
+
     if not arquivo_json.endswith(".json"):
         arquivo_json += ".json"
 
     with open(arquivo_json, "r", encoding="utf-8") as f:
         melodia = json.load(f)
 
-    return extrair_notas_json(melodia)
+    res = extrair_notas_json(melodia)
+
+    print(f"Partitura processada com sucesso. Foram encontradas {len(res[0])} notas.")
+    print(f"Duração necessária aproximada de {res[1]} seg.")
+    print()
+
+    return res

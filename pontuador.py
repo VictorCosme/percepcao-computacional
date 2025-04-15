@@ -58,4 +58,6 @@ def gerar_feedback(comparacoes, peso_afinacao=0.5):
                 f"- Duração: {round(duracao_porcentagem * 100, 2)}%\n"
                 f"- Pontuação total: {score} {emoji}")
 
+    print(feedback)
+    
     return feedback

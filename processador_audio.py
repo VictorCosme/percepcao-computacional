@@ -18,9 +18,11 @@ def limpar_audio(audio: np.ndarray, sr: int, duracao_minima: float) -> tuple[np.
     duracao_atual = len(audio_limpo) / sr
     if duracao_atual < duracao_minima:
         falta = int((duracao_minima - duracao_atual) * sr)
-        audio_limpo = np.concatenate([audio_limpo, np.zeros(falta)])
+        audio_limpo = np.concatenate((audio_limpo, np.zeros(falta)))
 
-    return audio_limpo, sr
+    duracao_atual = len(audio_limpo) / sr
+
+    return audio_limpo, sr, duracao_atual
 
 
 def segmentar_audio(audio: np.ndarray, sr: int, notas: list[dict]) -> list[tuple[str, np.ndarray]]:
@@ -119,19 +121,27 @@ def extrair_notas_segmentos(segmentos: list[tuple[str, np.ndarray]], sr: int, na
     duracao = 0
     for nota in notas_detectadas:
         duracao += nota["duracao"]
-
-    return notas_detectadas, round(duracao, 3)
+    
+    return notas_detectadas
 
 
 def processar_audio(arquivo_wav: str, previstas: list[dict], duracao_minima: float, naipe: str = "default") -> tuple[list[dict[str, str | float]], float]:
+    print(f"Processando e executando o áudio da música {arquivo_wav.split("/")[-1]}...")
+    
     if not arquivo_wav.endswith(".wav"):
         arquivo_wav += ".wav"
 
     audio, sr = librosa.load(arquivo_wav, sr=None)
-    audio_filtrado, sr = limpar_audio(audio, sr, duracao_minima)
+    audio_filtrado, sr, duracao_total = limpar_audio(audio, sr, duracao_minima)
     sd.play(audio_filtrado, sr)
     sd.wait()
 
     segmentos = segmentar_audio(audio_filtrado, sr, previstas)
 
-    return extrair_notas_segmentos(segmentos, sr, naipe)
+    res = extrair_notas_segmentos(segmentos, sr, naipe), duracao_total
+
+    print(f"Áudio processado com sucesso. Foram encontradas {len(res[0])} notas.")
+    print(f"Duração obtida aproximada de {res[1]} seg.")
+    print()
+
+    return res

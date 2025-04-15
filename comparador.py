@@ -37,6 +37,9 @@ def avaliar_execucao(previstas: list[dict[str, str | float]] | None,
                      detectadas: list[dict[str, str | float]] | None,
                      tolerancia_afinacao: int = 1,
                      tolerancia_duracao: float = 0.25) -> list[dict[str, str | bool]]:
+
+    print(f"Comparando e gerando o feedback...")
+
     if previstas is None or detectadas is None:
         return []
 

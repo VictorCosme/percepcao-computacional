@@ -1,35 +1,49 @@
 {
   "title": "Bella prova è d'alma forte",
-  "tempo": "100",
+  "tempo": "78",
   "notes": [
     {"pitch": "rest", "duration": "seminima"},
     {"pitch": "rest", "duration": "colcheia"},
     {"pitch": "Mi4", "duration": "seminima"},
     {"pitch": "Mi4", "duration": "colcheia"},
+
     {"pitch": "Do5", "duration": "seminima"},
     {"pitch": "Mi4", "duration": "colcheia"},
     {"pitch": "Mi4", "duration": "seminima"},
     {"pitch": "Mi4", "duration": "colcheia"},
+
     {"pitch": "Do5", "duration": "seminima"},
     {"pitch": "Mi4", "duration": "colcheia"},
     {"pitch": "Do5", "duration": "seminima"}, 
     {"pitch": "Do5", "duration": "colcheia"},
+
     {"pitch": "Si4", "duration": "seminima"},
     {"pitch": "Re4", "duration": "colcheia"},
     {"pitch": "Si4", "duration": "seminima"},
     {"pitch": "Re4", "duration": "colcheia"},
+
+
+
     {"pitch": "Do4", "duration": "seminima"},
     {"pitch": "Do4", "duration": "semicolcheia"},
     {"pitch": "rest", "duration": "semicolcheia"},
     {"pitch": "Mi4", "duration": "seminima"},
     {"pitch": "Mi4", "duration": "colcheia"},
+
     {"pitch": "Do5", "duration": "seminima"},
     {"pitch": "Mi4", "duration": "colcheia"},
     {"pitch": "Mi4", "duration": "seminima"},
     {"pitch": "Mi4", "duration": "colcheia"},
+
     {"pitch": "Do5", "duration": "seminima"},
     {"pitch": "Mi4", "duration": "colcheia"},
     {"pitch": "Do5", "duration": "seminima"},
+    {"pitch": "Mi4", "duration": "colcheia"},
+
+    {"pitch": "Fa4", "duration": "seminima"},
+    {"pitch": "Fa4", "duration": "semicolcheia"},
+    {"pitch": "rest", "duration": "semicolcheia"},
+    {"pitch": "Si4", "duration": "seminima"},    
     {"pitch": "Mi4", "duration": "colcheia"}
   ]
 }
